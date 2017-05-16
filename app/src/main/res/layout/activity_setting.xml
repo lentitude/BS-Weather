@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/colorBackground"
+    >
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar_setting"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/colorWhite"
+        app:titleTextColor="@color/colorFont"
+        />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="15dp"
+        android:orientation="vertical"
+        android:background="@color/colorBackground"
+        >
+
+        <android.support.v7.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:background="@color/colorWhite"
+            app:cardCornerRadius="0dp"
+            app:cardElevation="1dp">
+
+
+            <Button
+                android:id="@+id/choose_area"
+                android:text="选择地区"
+                android:textColor="@color/colorFont"
+                android:textSize="16sp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                style="?android:attr/borderlessButtonStyle"
+                android:background="@drawable/ripple"
+                />
+
+        </android.support.v7.widget.CardView>
+
+        <android.support.v7.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:background="@color/colorWhite"
+            android:layout_marginTop="10dp"
+            app:cardCornerRadius="0dp"
+            app:cardElevation="1dp">
+
+            <Button
+                android:id="@+id/auto_update_time"
+                android:text="更新频率"
+                android:textColor="@color/colorFont"
+                android:textSize="16sp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                style="?android:attr/borderlessButtonStyle"
+                android:background="@drawable/ripple"
+                />
+
+        </android.support.v7.widget.CardView>
+
+
+        <android.support.v7.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:background="@color/colorWhite"
+            android:layout_marginTop="10dp"
+            app:cardCornerRadius="0dp"
+            app:cardElevation="1dp">
+
+            <Button
+                android:id="@+id/about_app"
+                android:text="关于天气"
+                android:textColor="@color/colorFont"
+                android:textSize="16sp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                style="?android:attr/borderlessButtonStyle"
+                android:background="@drawable/ripple"
+                />
+
+        </android.support.v7.widget.CardView>
+
+
+
+
+
+    </LinearLayout>
+
+
+
+
+
+
+</LinearLayout>
