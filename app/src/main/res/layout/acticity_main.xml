@@ -1,34 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/coor_layout"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main_layout"
     android:layout_width="match_parent" android:layout_height="match_parent"
     android:background="@color/colorBackground"
-    android:visibility="invisible">
+    android:visibility="invisible"
+    android:orientation="vertical">
 
-    <android.support.design.widget.AppBarLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:elevation="0dp"
-        >
-
-        <include
-            android:id="@+id/tool_bar"
-            layout="@layout/weather_title"
-            app:layout_scrollFlags="scroll|enterAlways|snap"
-
-            />
-
-
-    </android.support.design.widget.AppBarLayout>
-
-
+    <include layout="@layout/weather_title" />
 
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/swipe_refresh"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
         >
 
         <ScrollView
@@ -43,7 +26,6 @@
                 android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-
 
 
                 <include layout="@layout/weather_now"/>
@@ -72,4 +54,4 @@
     </android.support.v4.widget.SwipeRefreshLayout>
 
 
-</android.support.design.widget.CoordinatorLayout>
+</LinearLayout>

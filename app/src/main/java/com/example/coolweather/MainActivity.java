@@ -1,17 +1,22 @@
 package com.example.coolweather;
 
 import android.Manifest;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.BitmapFactory;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
@@ -57,11 +62,16 @@ import okhttp3.Response;
 
 public class MainActivity extends BaseActivity{
 
+    private static int SIGN_NO_INTERNET = 0;
+    private static int SIGN_ALARMS = 1;
+
     private ScrollView weatherLayout;
 
-    private CoordinatorLayout coordinatorLayout;
+    private LinearLayout mainLayout;
 
     private TextView titleCity;
+
+    List<String> permissionList  = new ArrayList<>();
 
     // 以下是 weather_noew 的内容
 
@@ -177,7 +187,7 @@ public class MainActivity extends BaseActivity{
         weatherLayout = (ScrollView)findViewById(R.id.weather_layout);
         titleCity = (TextView)findViewById(R.id.title_city);
         forecastLayout = (LinearLayout)findViewById(R.id.forecast_layout);
-        coordinatorLayout = (CoordinatorLayout)findViewById(R.id.coor_layout);
+        mainLayout = (LinearLayout) findViewById(R.id.main_layout);
 
         // weather_now
         degreeText = (TextView)findViewById(R.id.degree_text);
@@ -225,7 +235,6 @@ public class MainActivity extends BaseActivity{
         // LBS
         mlocationClient = new LocationClient(getApplicationContext());
         mlocationClient.registerLocationListener(new MyLocationListener());
-        List<String> permissionList  = new ArrayList<>();
         if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
             permissionList.add(Manifest.permission.ACCESS_FINE_LOCATION);
         }
@@ -242,6 +251,7 @@ public class MainActivity extends BaseActivity{
 
         swipeRefresh = (SwipeRefreshLayout)findViewById(R.id.swipe_refresh);
         swipeRefresh.setColorSchemeColors(getResources().getColor(R.color.colorAccent));
+
 
     }
 
@@ -310,7 +320,7 @@ public class MainActivity extends BaseActivity{
                 // 有缓存时直接解析天气数据
                 Weather weather = Utility.handleWeatherResponse(weatherString);
                 showWeatherInfo(weather);
-                coordinatorLayout.setVisibility(View.VISIBLE);
+                mainLayout.setVisibility(View.VISIBLE);
             }else {
                 // 无缓存时向服务器查询数据
                 if (getNetworkInfo() != null && getNetworkInfo().isAvailable()){
@@ -320,7 +330,7 @@ public class MainActivity extends BaseActivity{
                     mlocationClient.setLocOption(option);
                     mlocationClient.start();
                 }else{
-                    showDialog();
+                    showDialog(null, "当前无网络，请打开网络",SIGN_NO_INTERNET);
                 }
 
             }
@@ -333,16 +343,23 @@ public class MainActivity extends BaseActivity{
     /**
      * 显示对话框
      */
-    public void showDialog(){
-        AlertDialog.Builder alertDialog  = new AlertDialog.Builder(MainActivity.this);
-        alertDialog.setMessage("当前无网络,请先打开网络");
+    public void showDialog(String title, String info, final int SIGN){
+        final AlertDialog.Builder alertDialog  = new AlertDialog.Builder(MainActivity.this);
+        alertDialog.setMessage(info);
         alertDialog.setCancelable(false);
         alertDialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Intent intent = new Intent(Settings.ACTION_SETTINGS);
-                startActivity(intent);
-                TaskKiller.dropAllAcitivty();
+                if (SIGN == SIGN_NO_INTERNET){
+                    Intent intent = new Intent(Settings.ACTION_SETTINGS);
+                    startActivity(intent);
+                    TaskKiller.dropAllAcitivty();
+                }
+
+                if (SIGN == SIGN_ALARMS){
+                    alertDialog.setCancelable(true);
+                }
+
             }
         });
         alertDialog.show();
@@ -356,8 +373,12 @@ public class MainActivity extends BaseActivity{
         @Override
         public void onReceiveLocation(BDLocation bdLocation) {
             currentPosition = bdLocation.getCity();
-            requestWeather(currentPosition);
-            showShort(currentPosition + " 定位成功");
+            if (currentPosition != null){
+                requestWeather(currentPosition);
+                showShort(currentPosition + " 定位成功");
+            }else{
+                showShort("没有获取到定位权限，请打开定位权限后再打开此应用");
+        }
         }
 
         @Override
@@ -464,50 +485,60 @@ public class MainActivity extends BaseActivity{
 
 
         // weather_aqi 空气质量
-        {
-            String infoText = "无";
+
+        String infoText = "无";
+        if (weather.aqi == null){
+            aqiText.setText(infoText);
+            pm25Text.setText(infoText);
+            coText.setText(infoText);
+            o3Text.setText(infoText);
+            pm10Text.setText(infoText);
+            so2Text.setText(infoText);
+        }else{
             if (weather.aqi.city.aqi != null){
                 aqiText.setText(weather.aqi.city.aqi);
-                aqiText.getPaint().setFakeBoldText(true);
             }else{
                 aqiText.setText(infoText);
             }
 
             if (weather.aqi.city.pm25 != null){
                 pm25Text.setText(weather.aqi.city.pm25);
-                pm25Text.getPaint().setFakeBoldText(true);
             }else{
                 pm25Text.setText(infoText);
             }
 
             if (weather.aqi.city.co != null){
                 coText.setText(weather.aqi.city.co);
-                coText.getPaint().setFakeBoldText(true);
             }else{
                 coText.setText(infoText);
             }
 
             if (weather.aqi.city.o3 != null){
                 o3Text.setText(weather.aqi.city.o3);
-                o3Text.getPaint().setFakeBoldText(true);
             }else{
                 o3Text.setText(infoText);
             }
 
             if (weather.aqi.city.pm10 != null){
                 pm10Text.setText(weather.aqi.city.pm10);
-                pm10Text.getPaint().setFakeBoldText(true);
             }else{
                 pm10Text.setText(infoText);
             }
 
             if (weather.aqi.city.so2 != null){
                 so2Text.setText(weather.aqi.city.so2);
-                so2Text.getPaint().setFakeBoldText(true);
             }else{
                 so2Text.setText(infoText);
             }
         }
+        aqiText.getPaint().setFakeBoldText(true);
+        pm25Text.getPaint().setFakeBoldText(true);
+        coText.getPaint().setFakeBoldText(true);
+        o3Text.getPaint().setFakeBoldText(true);
+        pm10Text.getPaint().setFakeBoldText(true);
+        so2Text.getPaint().setFakeBoldText(true);
+
+        // 舒适指数
 
         comfortSign = weather.suggestion.comfort.sign;
         carWashSign = weather.suggestion.carWash.sign;
@@ -538,7 +569,34 @@ public class MainActivity extends BaseActivity{
         coldInfo = weather.suggestion.cold.info;
 
         weatherLayout.setVisibility(View.VISIBLE);
-        coordinatorLayout.setVisibility(View.VISIBLE);
+        mainLayout.setVisibility(View.VISIBLE);
+
+        // 天气预警
+        if (weather.alarms != null){
+            String level = weather.alarms.level;
+            String title = weather.alarms.title;
+            String text = weather.alarms.txt;
+            showDialog(title, text, SIGN_ALARMS);
+        }else{
+//            showDialog("无", "当前没有预警信息，请放心出行", SIGN_ALARMS);
+        }
+
+        // 通知栏
+//        Intent intent = new Intent(this, MainActivity.class);
+//        PendingIntent pi = PendingIntent.getActivity(this, 0, intent, 0);
+//        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+//        Notification notification = new NotificationCompat.Builder(this)
+//                .setContentTitle(degree + "°")
+//                .setContentText(comfortInfo)
+//                .setWhen(System.currentTimeMillis())
+//                .setSmallIcon(R.mipmap.ic_launcher)
+//                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher))
+//                .setContentIntent(pi)
+//                .setDefaults(NotificationCompat.DEFAULT_ALL)
+//                .setPriority(NotificationCompat.PRIORITY_MAX)
+//                .build();
+//        manager.notify(1, notification);
+
     }
 
 
